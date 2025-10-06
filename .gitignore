@@ -1,0 +1,17 @@
+# Directorios de compilación y salida
+[Bb]in/
+[Oo]bj/
+
+# Paquetes NuGet
+*.nupkg
+*.snupkg
+# Archivos de caché
+.vs/
+.idea/
+.user
+*.suo
+
+# Archivos de depuración y logs
+*.log
+*.pdb
+*.pid

@@ -1,0 +1,25 @@
+﻿🔒 Licencia y Atribución
+
+Este proyecto es de uso libre bajo una Licencia de Atribución Obligatoria con Restricción de Reventa.
+
+Puedes:
+
+    Usar, copiar y modificar este código en cualquier proyecto personal o comercial.
+
+    Redistribuir la DLL o el código fuente modificado.
+
+NO Puedes:
+
+    Vender o sublicenciar el código fuente de esta biblioteca como un producto independiente.
+
+    Afirmar ser el autor original del código.
+
+🚩 ATRIBUCIÓN REQUERIDA (OBLIGATORIA)
+
+Si utilizas este código en un proyecto público o lo distribuyes (incluyendo en tus trabajos universitarios), DEBES incluir el siguiente crédito:
+
+    Autor Original (ZFormat): Cristobal Rodas
+
+        Email: crisrod25@gmail.com
+
+        GitHub: https://github.com/0r3k1
