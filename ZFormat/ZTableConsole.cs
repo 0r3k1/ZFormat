@@ -79,11 +79,8 @@ namespace ZFormat {
             }
 
             // 2. Dibujar la fila
-
             // --- POSICIONAMIENTO X/Y ---
-            if(RenderX >= 0) {
-                ZstringFormat.gotoxy(RenderX, RenderY);
-            }
+            ZstringFormat.gotoxy(RenderX, RenderY); // 💡 MUEVE el cursor a la posición X inicial de la capa.
             RenderY++; // Incrementa Y para la siguiente línea
             // --- FIN POSICIONAMIENTO ---
 
@@ -122,17 +119,18 @@ namespace ZFormat {
         /// Método principal para dibujar la tabla completa en la consola.
         /// </summary>
         public void Render() {
-            const int padding = 2; // Relleno de espacios a los lados del contenido.
+            const int padding = 2;
 
-            // --- Lógica para determinar el inicio de Y ---
-            // Si el usuario no definió RenderY (o lo dejó en -1), tomamos la posición actual del cursor.
+            // --- Lógica para determinar el inicio de X/Y y asegurar valores válidos (>= 0) ---
             if(RenderY < 0) {
+                // Si RenderY es -1, la tabla usará la posición actual.
                 RenderY = Console.CursorTop;
             }
-            // Si el usuario no definió RenderX (o lo dejó en -1), tomamos la posición actual del cursor.
             if(RenderX < 0) {
+                // Si RenderX es -1, la tabla usará la posición actual.
                 RenderX = Console.CursorLeft;
             }
+            // 💡 AHORA RenderX y RenderY tienen valores válidos (>= 0)
             // --- Fin Lógica de inicio ---
 
             _isFirstDraw = true;
@@ -140,10 +138,10 @@ namespace ZFormat {
             // 1. Borde Superior
             DrawBoundary(padding, BoundaryType.Top);
 
-            // 2. Fila de Encabezados
+            // 2. Fila de Encabezados 👈 ESTO FALTABA EN EL CÓDIGO ANTERIOR
             DrawRow(_header, padding, HeaderColor, HeaderBackColor);
 
-            // 3. Separador entre Encabezado y Datos
+            // 3. Separador entre Encabezado y Datos 👈 ESTO TAMBIÉN FALTABA EN EL CÓDIGO ANTERIOR
             _isFirstDraw = false;
             DrawBoundary(padding, BoundaryType.HeaderSeparator);
 
@@ -202,9 +200,7 @@ namespace ZFormat {
             }
 
             // --- POSICIONAMIENTO X/Y ---
-            if(RenderX >= 0) {
-                ZstringFormat.gotoxy(RenderX, RenderY);
-            }
+            ZstringFormat.gotoxy(RenderX, RenderY); // 💡 MUEVE el cursor a la posición X inicial de la capa.
             RenderY++; // Incrementa Y para la siguiente línea
             // --- FIN POSICIONAMIENTO ---
 
@@ -252,11 +248,9 @@ namespace ZFormat {
         private void DrawRow(string[] data, int padding, ConsoleColor foreColor, ConsoleColor backColor) {
 
             // --- POSICIONAMIENTO X/Y ---
-            if(RenderX >= 0) {
-                ZstringFormat.gotoxy(RenderX, RenderY);
-            }
+            ZstringFormat.gotoxy(RenderX, RenderY); // 💡 MUEVE el cursor a la posición X inicial de la capa.
             RenderY++; // Incrementa Y para la siguiente línea
-                       // --- FIN POSICIONAMIENTO ---
+            // --- FIN POSICIONAMIENTO ---
 
             Console.Write(_style.Vertical); // Borde vertical izquierdo
 

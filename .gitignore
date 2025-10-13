@@ -15,3 +15,9 @@
 *.log
 *.pdb
 *.pid
+
+# Ignorar la carpeta de la aplicación de demostración
+PanditaMedic/
+
+# Ignorar paquetes de NuGet (si usas un archivo packages.config o tienes una carpeta global)
+packages/

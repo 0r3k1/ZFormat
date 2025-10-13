@@ -335,5 +335,20 @@ namespace ZFormat {
             // 'true' oculta la tecla presionada
             Console.ReadKey(true);
         }
+
+        /// <summary>
+        /// Pinta un bloque rectangular de color en coordenadas específicas, borrando efectivamente el contenido anterior.
+        /// Este es un alias (un nombre diferente) para printLayoutInCoord.
+        /// </summary>
+        /// <param name="x">Columna de inicio.</param>
+        /// <param name="y">Fila de inicio.</param>
+        /// <param name="w">Ancho del bloque.</param>
+        /// <param name="h">Altura del bloque.</param>
+        /// <param name="color">El color de fondo a usar (por defecto: ConsoleColor.Black).</param>
+        public static void ClearArea(int x, int y, int w, int h, ConsoleColor color = ConsoleColor.Black) {
+            // Reutilizamos la lógica ya existente en printLayoutInCoord
+            printLayoutInCoord(color, x, y, w, h);
+            // Nota: printLayoutInCoord ya llama a gotoxy(0, 0) al final.
+        }
     }
 }
