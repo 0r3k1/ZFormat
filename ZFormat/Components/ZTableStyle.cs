@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ZFormat {
+namespace ZFormat.Components {
     // 1. Enumeración de estilos predefinidos. El usuario elige uno al crear la tabla.
     public enum TableBorderStyle {
         Ascii,           // El estilo clásico de terminal ('+---+' con ASCII básico).

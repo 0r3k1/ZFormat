@@ -1,160 +1,136 @@
 ﻿using System;
-using System.Text;
-using System.Threading;
-using ZFormat.ZLayer;
-using ZFormat.PanditaMedic;
+using ZFormat.Core;
+using ZFormat.Controls;
+using ZFormat.Layouts;
 
-namespace ZFormat {
+namespace PanditaCoffe {
+    class Program {
+        // Variables globales para acceder a ellas fácilmente
+        static ZApp app;
+        static ZPanel panelLogin;
+        static ZPanel panelDashboard;
+        static ZLabel lblUsuarioLogueado;
+        static ZList menuLateral;
 
-    // --- Enum para gestionar el foco ---
-    enum FocusState {
-        Menu,
-        Content
-    }
+        static void Main() {
+            // 1. Configurar Tema y App
+            ZTheme.SetTheme("terminal-azul"); // Un tema azulado queda bien para sistemas
+            app = new ZApp("Pandita Coffe - ERP");
 
-    internal class Program {
+            // 2. Construir las dos pantallas
+            ConstruirLogin();
+            ConstruirDashboard();
 
+            // 3. Añadir ambas pantallas al Root (El Dashboard nace oculto)
+            app.RootLayout.AddChild(panelDashboard);
+            app.RootLayout.AddChild(panelLogin);
 
-        // -----------------------------------------------------------------------------
-        // 1. LÓGICA DE DIBUJO DEL TÍTULO (Movida a la Clase Program)
-        // -----------------------------------------------------------------------------
-        static void DrawMyTitle(int width, int height) {
-            string appName = "Sistema de Farmacia ZFormat PanditaMedic V1.0";
-            ZstringFormat.gotoxy(0, 1);
-            ZstringFormat.WriteColor(
-                ZstringFormat.centeredString(appName, width),
-                ConsoleColor.Yellow,
-                ConsoleColor.DarkBlue
-            );
+            app.Run();
         }
 
-        // -----------------------------------------------------------------------------
-        // 2. MÉTODO PRINCIPAL (GAME LOOP)
-        // -----------------------------------------------------------------------------
-        static void Main(string[] args) {
+        static void ConstruirLogin() {
+            int w = 45, h = 12; // Lo hicimos un poquito más ancho (42) para que respire
+            panelLogin = new ZPanel {
+                X = (app.RootLayout.Width - w) / 2,
+                Y = (app.RootLayout.Height - h) / 2,
+                Width = w,
+                Height = h,
+                BackgroundColor = ConsoleColor.DarkGray,
+                ZIndex = 10
+            };
 
-            // Ajuste de Codificación (para los caracteres especiales)
-            Console.OutputEncoding = Encoding.UTF8;
+            // Al darle un Width=28 evitamos que el fondo gris se desborde creando ese pixel extra
+            panelLogin.AddChild(new ZLabel("☕ PANDITA COFFE - ACCESO ☕") { X = 7, Y = 1, Width = 27, ForegroundColor = ConsoleColor.Yellow, BackgroundColor = ConsoleColor.DarkGray });
 
-            // --- CONSTANTES DE LAYOUT ---
-            const int TitleBarHeight = 3;
-            const int StatusBarHeight = 1;
-            const int SideMenuWidth = 25;
+            // Inputs más simétricos (Width = 34)
+            var txtUser = new ZInput { Label = "Usuario: ", X = 4, Y = 4, Width = 34, IsFocusable = true, BackgroundColor = ConsoleColor.DarkGray };
+            var txtPass = new ZInput { Label = "Clave:   ", X = 4, Y = 6, Width = 34, IsFocusable = true, IsPassword = true, BackgroundColor = ConsoleColor.DarkGray };
 
-            // 1. CALCULAR DIMENSIONES
-            int availableHeight = Console.WindowHeight - TitleBarHeight - StatusBarHeight;
-            int contentAreaWidth = Console.WindowWidth - SideMenuWidth;
+            var btnIngresar = new ZButton { Text = "INGRESAR", X = 14, Y = 9, IsFocusable = true, BackgroundColor = ConsoleColor.DarkGray };
 
-            // 2. INICIALIZACIÓN DEL MOTOR
-            var appManager = new ZLayoutManager();
+            btnIngresar.OnClick += () => {
+                if(txtUser.Value == "admin" && txtPass.Value == "123") {
+                    panelLogin.IsVisible = false;
+                    panelDashboard.IsVisible = true;
+                    lblUsuarioLogueado.Text = $"👤 {txtUser.Value.ToUpper()}";
 
-            // 3. DEFINICIÓN DE CAPAS ESTATICAS (Layout)
-            var barraTitulo = new ZTitleBar(0, 0, TitleBarHeight);
-            var menuOpciones = new string[] { "Clientes", "Inventario", "Reportes", "Configuración", "Ayuda" }; // 👈 Opciones Finales
-            var menuLateral = new ZSideMenu(menuOpciones, 0, TitleBarHeight, SideMenuWidth, availableHeight);
-            var statusBar = new ZStatusBar("ZStatusBar: Listo para la acción.", StatusBarHeight);
-            var contentContainer = new ZContentContainer(
-                startX: SideMenuWidth,
-                startY: TitleBarHeight,
-                width: contentAreaWidth,
-                height: availableHeight
-            );
+                    // Forzamos el redibujado de la pantalla principal en color negro
+                    app.RootLayout.BackgroundColor = ConsoleColor.Black;
+                    app.RootLayout.UpdateLayout();
 
-            // 4. DEFINICIÓN DE VISTAS DINÁMICAS (PanditaMedic)
-            // 💡 Vista de Bienvenida (Estado Inicial)
-            var welcomeView = new WelcomeView();
-            var clientesView = new ClientsView();
-            // ... Aquí irían InventoryView, ReportsView, etc. ...
-
-            // 5. ENSAMBLAJE
-            barraTitulo.SetContent(DrawMyTitle);
-            appManager.AddLayer(barraTitulo);
-            appManager.AddLayer(statusBar);
-            appManager.AddLayer(menuLateral);
-            appManager.AddLayer(contentContainer);
-
-            // Estado inicial: Mostrar la vista de bienvenida
-            FocusState currentFocus = FocusState.Menu;
-            contentContainer.SetContent(welcomeView); // 👈 Vista de Bienvenida al inicio
-
-            // --- AJUSTES INICIALES ---
-            Console.Clear();
-            ZstringFormat.RestoreColors();
-            Console.CursorVisible = false;
-
-            // --- BUCLE PRINCIPAL (Game Loop) ---
-            int loopDelayMs = 33;
-
-            while(appManager.IsRunning) {
-
-                // 1. MANEJO DE EVENTOS (Input)
-                ConsoleKeyInfo? keyInfo = appManager.PollInput();
-
-                if(keyInfo.HasValue) {
-                    ConsoleKey key = keyInfo.Value.Key;
-                    bool eventConsumed = false;
-
-                    // Lógica de Manejo de Foco y Salida
-                    if(key == ConsoleKey.Tab) {
-                        currentFocus = (currentFocus == FocusState.Menu) ? FocusState.Content : FocusState.Menu;
-                        statusBar.SetStatus($"Foco cambiado a: {currentFocus}", ConsoleColor.DarkMagenta, ConsoleColor.White, 1500);
-                        eventConsumed = true;
-                    } else if(key == ConsoleKey.Escape || key == ConsoleKey.Q) {
-                        appManager.IsRunning = false;
-                        eventConsumed = true;
-                    }
-
-                    if(!eventConsumed) {
-                        if(currentFocus == FocusState.Menu) {
-                            eventConsumed = menuLateral.HandleInput(keyInfo.Value);
-
-                            if(key == ConsoleKey.Enter) {
-                                int selectedIndex = menuLateral.GetSelectedIndex();
-
-                                // >>> LÓGICA DE NAVEGACIÓN DE VISTAS (Switching) <<<
-                                LayerBase newView = selectedIndex switch {
-                                    0 => clientesView, // "Clientes"
-                                    _ => welcomeView,  // Cualquier otra opción, por ahora muestra la bienvenida
-                                };
-
-                                contentContainer.SetContent(newView);
-                                statusBar.SetStatus($"Módulo {menuOpciones[selectedIndex]} cargado. Foco movido a Contenido.",
-                                    ConsoleColor.DarkBlue, ConsoleColor.White, 2500);
-
-                                currentFocus = FocusState.Content;
-                                eventConsumed = true;
-                            }
-
-                        } else if(currentFocus == FocusState.Content) {
-                            // Si el contenido no consume el evento, podemos hacer que ENTER o ESC devuelvan el foco al menú
-                            eventConsumed = contentContainer.HandleInput(keyInfo.Value);
-
-                            // Si el contenido no consumió la tecla (ej. no fue una acción CRUD)
-                            if(!eventConsumed && (key == ConsoleKey.Escape || key == ConsoleKey.Q)) {
-                                currentFocus = FocusState.Menu;
-                                statusBar.SetStatus("Foco devuelto al Menú Principal.", ConsoleColor.DarkMagenta, ConsoleColor.White, 1500);
-                                eventConsumed = true;
-                            }
-                        }
-                    }
+                    app.FocusedControl = menuLateral;
+                    menuLateral.HasFocus = true; // Encendemos el foco visual del menú
+                } else {
+                    btnIngresar.Text = "DATOS INCORRECTOS";
+                    btnIngresar.FocusColor = ConsoleColor.Red;
                 }
+            };
 
-                // 2. ACTUALIZAR LÓGICA DE LA APLICACIÓN (Update)
-                appManager.UpdateLayers();
+            panelLogin.AddChild(txtUser);
+            panelLogin.AddChild(txtPass);
+            panelLogin.AddChild(btnIngresar);
 
-                // 3. DIBUJAR (Render)
-                appManager.Draw();
+            // ¡LA MAGIA DEL FOCO INICIAL!
+            app.FocusedControl = txtUser;
+            txtUser.HasFocus = true; // Encendemos el cursor desde el inicio. Ya no tienes que dar TAB.
+        }
 
-                // 4. CONTROL DE TIEMPO
-                Thread.Sleep(loopDelayMs);
-            }
-            // --- FIN BUCLE ---
+        static void ConstruirDashboard() {
+            // El dashboard principal ahora es negro
+            panelDashboard = new ZPanel { Dock = ZDockMode.Fill, IsVisible = false, ZIndex = 1, BackgroundColor = ConsoleColor.Black };
 
-            // Limpieza final
-            Console.CursorVisible = true;
-            Console.Clear();
-            Console.WriteLine("Aplicación Farmacia PanditaMedic finalizada. Presiona cualquier tecla para cerrar la consola...");
-            Console.ReadKey(true);
+            // --- HEADER (Azul) ---
+            var header = new ZPanel { Dock = ZDockMode.Top, Height = 3, BackgroundColor = ConsoleColor.DarkBlue };
+
+            lblUsuarioLogueado = new ZLabel("👤 Invitado") { X = 2, Y = 1, ForegroundColor = ConsoleColor.Yellow, BackgroundColor = ConsoleColor.DarkBlue };
+            var lblTitulo = new ZLabel("☕ PANDITA COFFE ERP") { X = app.RootLayout.Width / 2 - 10, Y = 1, ForegroundColor = ConsoleColor.White, BackgroundColor = ConsoleColor.DarkBlue };
+            var lblReloj = new ZLabel("00:00:00") { X = app.RootLayout.Width - 12, Y = 1, ForegroundColor = ConsoleColor.Cyan, BackgroundColor = ConsoleColor.DarkBlue };
+
+            header.AddChild(lblUsuarioLogueado);
+            header.AddChild(lblTitulo);
+            header.AddChild(lblReloj);
+
+            var timerReloj = app.CreateTimer(1000);
+            timerReloj.OnTick += () => lblReloj.Text = DateTime.Now.ToString("HH:mm:ss");
+            timerReloj.Start();
+            app.OnUpdate += () => timerReloj.Update();
+
+            // --- FOOTER (Gris) ---
+            var footer = new ZPanel { Dock = ZDockMode.Bottom, Height = 1, BackgroundColor = ConsoleColor.DarkGray };
+            footer.AddChild(new ZLabel(" [TAB] Navegar | [ENTER] Seleccionar | [↑↓] Mover Menú | [F10] Salir ") { X = 2, Y = 0, ForegroundColor = ConsoleColor.Black, BackgroundColor = ConsoleColor.DarkGray });
+
+            // --- BODY (Negro) ---
+            var body = new ZPanel { Dock = ZDockMode.Fill, BackgroundColor = ConsoleColor.Black };
+
+            // Menú Lateral (Violeta = DarkMagenta)
+            var sidebar = new ZPanel { Dock = ZDockMode.Left, Width = 20, BackgroundColor = ConsoleColor.DarkMagenta };
+            menuLateral = new ZList { X = 0, Y = 1, Width = 20, Height = 15, IsFocusable = true, SelectedBackColor = ConsoleColor.White, SelectedForeColor = ConsoleColor.Black, BackgroundColor = ConsoleColor.DarkMagenta };
+
+            menuLateral.Items.Add(new ZListItem("Usuarios", "👤"));
+            menuLateral.Items.Add(new ZListItem("Ventas", "💰"));
+            menuLateral.Items.Add(new ZListItem("Pedidos", "🛒"));
+            menuLateral.Items.Add(new ZListItem("Inventario", "📦"));
+            menuLateral.Items.Add(new ZListItem("Clientes", "🤝"));
+            menuLateral.Items.Add(new ZListItem("Ayuda", "💡"));
+            menuLateral.Items.Add(new ZListItem("Nosotros", "⭐"));
+
+            sidebar.AddChild(menuLateral);
+
+            // Contenido Principal (Negro)
+            var contenido = new ZPanel { Dock = ZDockMode.Fill, BackgroundColor = ConsoleColor.Black };
+            var lblBienvenida = new ZLabel("Seleccione una opción del menú lateral para comenzar.") { X = 5, Y = 5, BackgroundColor = ConsoleColor.Black };
+            contenido.AddChild(lblBienvenida);
+
+            menuLateral.OnItemSelected += (item) => {
+                lblBienvenida.Text = $"Has seleccionado el módulo de: {item.Text.ToUpper()}";
+            };
+
+            body.AddChild(sidebar);
+            body.AddChild(contenido);
+
+            panelDashboard.AddChild(header);
+            panelDashboard.AddChild(footer);
+            panelDashboard.AddChild(body);
         }
     }
 }
