@@ -26,18 +26,22 @@ A continuación, capturas de **Pandita Coffe ERP**, una aplicación comercial co
 
 ### 1. Dashboards y Paneles Flotantes
 Manejo de colores avanzados y posicionamiento absoluto.
+
 ![Dashboard Principal](assets/dashboard.png)
 
 ### 2. Layouts Divididos (Punto de Venta)
 Múltiples `ZPanel` conviviendo en pantalla con focos de teclado independientes.
+
 ![Punto de Venta](assets/pos.png)
 
 ### 3. ZMessageBox y Superposición de Capas
 Cuadros de diálogo que flotan sobre la interfaz principal sin romper el dibujado de fondo gracias a `ZBuffer`.
+
 ![Cuadros de Diálogo](assets/modal.png)
 
 ### 4. ZScrollView (Vistas con Desplazamiento)
 Vistas de contenido extenso con barras de desplazamiento dinámicas controlables por teclado.
+
 ![Vista con Scroll](assets/about.png)
 
 ---
@@ -55,8 +59,8 @@ using ZFormat.Controls;
 namespace MiApp {
     class Program {
         static void Main(string[] args) {
-            // 1. Inicializar el motor a 100x30
-            ZApp app = new ZApp(100, 30); 
+            // 1. Inicializar el motor con el título de la ventana
+            ZApp app = new ZApp("Mi Primera App ZFormat"); 
 
             // 2. Crear una vista principal (Panel)
             ZPanel vistaPrincipal = new ZPanel { 
@@ -77,8 +81,9 @@ namespace MiApp {
                 IsFocusable = true 
             };
 
-            // 4. Asignar eventos
-            btnSalir.OnClick += () => app.Stop();
+            // 4. Asignar eventos (En ZFormat, la tecla F10 cierra la app por defecto, 
+            // pero aquí forzamos el cierre al hacer clic en el botón)
+            btnSalir.OnClick += () => Environment.Exit(0);
 
             vistaPrincipal.AddChild(titulo);
             vistaPrincipal.AddChild(btnSalir);
@@ -92,7 +97,9 @@ namespace MiApp {
     }
 }
 ```
+Resultado en pantalla:
 
+![Hola Mundo](assets/Hola.png)
 ---
 
 ## 📦 Instalación y Descarga
